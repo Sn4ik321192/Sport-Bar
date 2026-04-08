@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sport Bar</title>
+    <title>Sport-Bar</title>
     <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -14,7 +14,7 @@
     <main class="app-shell">
         <header class="hero glass">
     <div class="hero-center">
-        <h1 class="hero-logo">Sport Bar</h1>
+        <h1 class="hero-logo">Sport-Bar</h1>
         <div class="hero-glow"></div>
     </div>
 </header>
@@ -66,14 +66,16 @@
             <aside class="glass receipt-panel">
     <div class="panel-header">
         <h2>Чек</h2>
-        <span class="chip">Автоподсчет</span>
+        
     </div>
 
     <div class="tables-switch glass-inner">
-        <button class="table-btn active" onclick="switchTable('table1', this)">Стол 1</button>
-        <button class="table-btn" onclick="switchTable('table2', this)">Стол 2</button>
-        <button class="table-btn" onclick="switchTable('ps', this)">PS</button>
-    </div>
+    <button class="table-btn active" onclick="switchTable('table1', this)">Стол 1</button>
+    <button class="table-btn" onclick="switchTable('table2', this)">Стол 2</button>
+    <button class="table-btn" onclick="switchTable('table3', this)">Стол 3</button>
+    <button class="table-btn" onclick="switchTable('table4', this)">Стол 4</button>
+    <button class="table-btn" onclick="switchTable('ps', this)">PS</button>
+</div>
 
     <div id="receiptItems" class="receipt-items">
         <p class="empty-text">Пока ничего не добавлено</p>
@@ -84,7 +86,11 @@
 
         <label class="payment-label">
             <span>Сумма от клиента</span>
-            <input type="number" id="paidAmountInput" min="0" step="1" placeholder="Введите сумму" />
+            <div class="number-input">
+    <button onclick="changePaid(-10)">−</button>
+    <input type="number" id="paidAmountInput" placeholder="Введите сумму" />
+    <button onclick="changePaid(10)">+</button>
+</div> />
         </label>
 
         <div class="payment-row">
@@ -154,6 +160,7 @@
         </div>
     </div>
 </div>
+
 
     <script src="app.js"></script>
 </body>
