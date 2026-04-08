@@ -5,16 +5,28 @@ const paidAmountsKey = "paid_amounts_v_final";
 
 const MENU_DATA = [
     {
-        category: "Пиво на розлив",
-        items: [
-            { name: "Карлсберг 0.5", price: 40, unit: "шт" },
-            { name: "Карлсберг 0.33", price: 25, unit: "шт" },
-            { name: "Бланк 0.5", price: 50, unit: "шт" },
-            { name: "Бланк 0.33", price: 35, unit: "шт" },
-            { name: "Батяр 0.5", price: 30, unit: "шт" },
-            { name: "Батяр 0.33", price: 20, unit: "шт" }
-        ]
-    },
+    category: "На розлив",
+    items: [
+        { name: "Карлсберг 0.5", price: 40, unit: "шт" },
+        { name: "Карлсберг 0.33", price: 25, unit: "шт" },
+        { name: "Бланк 0.5", price: 50, unit: "шт" },
+        { name: "Бланк 0.33", price: 35, unit: "шт" },
+        { name: "Батяр 0.5", price: 30, unit: "шт" },
+        { name: "Батяр 0.33", price: 20, unit: "шт" },
+
+        { name: "Jack Daniel’s 50 г", price: 50, unit: "порц." },
+        { name: "Jack Daniel’s 25 г", price: 50, unit: "порц." },
+
+        { name: "Jameson 50 г", price: 40, unit: "порц." },
+        { name: "Jameson 25 г", price: 40, unit: "порц." },
+
+        { name: "Sheridan’s 50 г", price: 40, unit: "порц." },
+        { name: "Sheridan’s 25 г", price: 40, unit: "порц." },
+
+        { name: "Водка Finlandia 50 г", price: 40, unit: "порц." },
+        { name: "Водка Finlandia 25 г", price: 40, unit: "порц." }
+    ]
+},
     {
         category: "Пиво бутылки",
         items: [
@@ -67,12 +79,16 @@ const SERVICES_DATA = [
 let receipts = {
     table1: [],
     table2: [],
+    table3: [],
+    table4: [],
     ps: []
 };
 
 let paidAmounts = {
     table1: "",
     table2: "",
+    table3: "",
+    table4: "",
     ps: ""
 };
 
@@ -106,6 +122,7 @@ const modalCancelBtn = document.getElementById("modalCancelBtn");
 const modalOkBtn = document.getElementById("modalOkBtn");
 const historyModalOverlay = document.getElementById("historyModalOverlay");
 const historyModalList = document.getElementById("historyModalList");
+
 
 menuTabBtn.addEventListener("click", () => switchTab("menu"));
 servicesTabBtn.addEventListener("click", () => switchTab("services"));
@@ -212,8 +229,10 @@ function loadData() {
         const parsed = JSON.parse(savedReceipts);
         receipts = {
             table1: Array.isArray(parsed.table1) ? parsed.table1 : [],
-            table2: Array.isArray(parsed.table2) ? parsed.table2 : [],
-            ps: Array.isArray(parsed.ps) ? parsed.ps : []
+    table2: Array.isArray(parsed.table2) ? parsed.table2 : [],
+    table3: Array.isArray(parsed.table3) ? parsed.table3 : [],
+    table4: Array.isArray(parsed.table4) ? parsed.table4 : [],
+    ps: Array.isArray(parsed.ps) ? parsed.ps : []
         };
     }
 
@@ -229,8 +248,10 @@ function loadData() {
         const parsedPaid = JSON.parse(savedPaidAmounts);
         paidAmounts = {
             table1: parsedPaid.table1 || "",
-            table2: parsedPaid.table2 || "",
-            ps: parsedPaid.ps || ""
+    table2: parsedPaid.table2 || "",
+    table3: parsedPaid.table3 || "",
+    table4: parsedPaid.table4 || "",
+    ps: parsedPaid.ps || ""
         };
     }
 
@@ -471,13 +492,31 @@ function closeCurrentReceipt() {
 
     showConfirm(`Закрыть чек для ${getTableTitle(currentTable)}?`, () => {
         const total = getReceiptTotal(currentTable);
+        const paid = Number(paidAmounts[currentTable] || 0);
+        const change = Math.max(0, roundMoney(paid - total));
+        const shortage = paid > 0 && paid < total ? roundMoney(total - paid) : 0;
 
         receiptHistory.unshift({
             id: crypto.randomUUID(),
             table: getTableTitle(currentTable),
+            tableKey: currentTable,
             total: total,
             itemsCount: currentReceipt.length,
-            createdAt: new Date().toLocaleString("ru-RU")
+            createdAt: new Date().toLocaleString("ru-RU"),
+            paid: paid,
+            change: change,
+            shortage: shortage,
+            paymentStatus: paid <= 0
+                ? (total > 0 ? "Ожидание оплаты" : "Чек пуст")
+                : paid >= total
+                    ? "Оплачено"
+                    : `Не хватает ${formatMoney(shortage)} лей`,
+            items: currentReceipt.map(item => ({
+                id: item.id,
+                name: item.name,
+                details: item.details,
+                total: item.total
+            }))
         });
 
         receipts[currentTable] = [];
@@ -546,15 +585,81 @@ function renderHistory() {
     historyModalList.innerHTML = "";
 
     receiptHistory.forEach(item => {
+        const itemsHtml = (item.items || []).length
+            ? item.items.map(receiptItem => `
+                <div class="history-detail-item">
+                    <div class="history-detail-item-top">
+                        <div class="history-detail-item-name">${escapeHtml(receiptItem.name)}</div>
+                        <div class="history-detail-item-sum">${formatMoney(receiptItem.total)} лей</div>
+                    </div>
+                    <div class="history-detail-item-sub">${escapeHtml(receiptItem.details || "Без деталей")}</div>
+                </div>
+            `).join("")
+            : `<p class="empty-text">Позиции не найдены</p>`;
+
         const el = document.createElement("div");
         el.className = "history-item";
         el.innerHTML = `
-            <div class="history-item-top">
-                <div class="history-item-title">${escapeHtml(item.table)}</div>
-                <div class="history-item-time">${escapeHtml(item.createdAt)}</div>
+            <div class="history-item-summary">
+                <div class="history-item-top">
+                    <div class="history-item-title">${escapeHtml(item.table)}</div>
+                    <div class="history-item-time">${escapeHtml(item.createdAt)}</div>
+                </div>
+                <div class="history-item-sub">${item.itemsCount} поз. • ${formatMoney(item.total)} лей</div>
             </div>
-            <div class="history-item-sub">${item.itemsCount} поз. • ${formatMoney(item.total)} лей</div>
+
+            <div class="history-item-details hidden">
+                <div class="history-detail-grid">
+                    <div class="history-detail-row">
+                        <span class="history-detail-label">Стол</span>
+                        <span class="history-detail-value">${escapeHtml(item.table)}</span>
+                    </div>
+                    <div class="history-detail-row">
+                        <span class="history-detail-label">Дата</span>
+                        <span class="history-detail-value">${escapeHtml(item.createdAt)}</span>
+                    </div>
+                    <div class="history-detail-row">
+                        <span class="history-detail-label">Позиций</span>
+                        <span class="history-detail-value">${item.itemsCount}</span>
+                    </div>
+                    <div class="history-detail-row">
+                        <span class="history-detail-label">Статус оплаты</span>
+                        <span class="history-detail-value">${escapeHtml(item.paymentStatus || "—")}</span>
+                    </div>
+                    <div class="history-detail-row">
+                        <span class="history-detail-label">Сумма чека</span>
+                        <span class="history-detail-value">${formatMoney(item.total)} лей</span>
+                    </div>
+                    <div class="history-detail-row">
+                        <span class="history-detail-label">Получено от клиента</span>
+                        <span class="history-detail-value">${formatMoney(item.paid || 0)} лей</span>
+                    </div>
+                    <div class="history-detail-row">
+                        <span class="history-detail-label">Сдача</span>
+                        <span class="history-detail-value">${formatMoney(item.change || 0)} лей</span>
+                    </div>
+                    <div class="history-detail-row">
+                        <span class="history-detail-label">Недостача</span>
+                        <span class="history-detail-value">${formatMoney(item.shortage || 0)} лей</span>
+                    </div>
+                </div>
+
+                <div class="history-detail-items-title">Состав чека</div>
+                <div class="history-detail-items">
+                    ${itemsHtml}
+                </div>
+            </div>
         `;
+
+        const summary = el.querySelector(".history-item-summary");
+        const details = el.querySelector(".history-item-details");
+
+        summary.onclick = () => {
+            const isHidden = details.classList.contains("hidden");
+            details.classList.toggle("hidden", !isHidden);
+            el.classList.toggle("expanded", isHidden);
+        };
+
         historyModalList.appendChild(el);
     });
 }
@@ -890,6 +995,8 @@ function renderPaymentInfo() {
 function getTableTitle(tableKey) {
     if (tableKey === "table1") return "Стол 1";
     if (tableKey === "table2") return "Стол 2";
+    if (tableKey === "table3") return "Стол 3";
+    if (tableKey === "table4") return "Стол 4";
     return "PS";
 }
 
@@ -939,6 +1046,17 @@ function escapeJs(text) {
     return String(text)
         .replaceAll("\\", "\\\\")
         .replaceAll("'", "\\'");
+}
+
+function changePaid(amount) {
+    const input = document.getElementById("paidAmountInput");
+    let value = Number(input.value) || 0;
+
+    value += amount;
+    if (value < 0) value = 0;
+
+    input.value = value;
+    handlePaidAmountInput();
 }
 
 loadData();
