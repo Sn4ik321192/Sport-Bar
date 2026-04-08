@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sport Bar</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+
+    <main class="app-shell">
+        <header class="hero glass">
+    <div class="hero-center">
+        <h1 class="hero-logo">Sport Bar</h1>
+        <div class="hero-glow"></div>
+    </div>
+</header>
+
+        <section class="top-actions">
+            <button class="big-tab active" id="menuTabBtn">Меню</button>
+            <button class="big-tab" id="servicesTabBtn">Услуги</button>
+        </section>
+
+        <section class="content-grid">
+            <div class="left-column">
+                <section class="glass panel active" id="menuPanel">
+                    <div class="panel-header">
+                        <h2>Меню</h2>
+                        
+                    </div>
+
+                    <div class="menu-tools glass-inner">
+                        <input type="text" id="menuSearch" placeholder="Поиск по меню..." />
+                    </div>
+
+                    <div id="menuCategories" class="category-tabs"></div>
+                    <div id="menuContent"></div>
+                </section>
+
+                <section class="glass panel" id="servicesPanel">
+                    <div class="panel-header">
+                        <h2>Услуги</h2>
+                        
+                    </div>
+
+                    <div id="servicesContent"></div>
+
+                    <div class="active-timers glass-inner">
+                        <div class="timers-header">
+                            <h3>Активные таймеры</h3>
+                            <span id="timersCount">0</span>
+                        </div>
+
+                        <div id="timersList" class="timers-list">
+                            <p class="empty-text">Пока нет активных услуг</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+
+            
+            <aside class="glass receipt-panel">
+    <div class="panel-header">
+        <h2>Чек</h2>
+        <span class="chip">Автоподсчет</span>
+    </div>
+
+    <div class="tables-switch glass-inner">
+        <button class="table-btn active" onclick="switchTable('table1', this)">Стол 1</button>
+        <button class="table-btn" onclick="switchTable('table2', this)">Стол 2</button>
+        <button class="table-btn" onclick="switchTable('ps', this)">PS</button>
+    </div>
+
+    <div id="receiptItems" class="receipt-items">
+        <p class="empty-text">Пока ничего не добавлено</p>
+    </div>
+
+    <div class="payment-box glass-inner">
+        <h3>Оплата</h3>
+
+        <label class="payment-label">
+            <span>Сумма от клиента</span>
+            <input type="number" id="paidAmountInput" min="0" step="1" placeholder="Введите сумму" />
+        </label>
+
+        <div class="payment-row">
+            <span>К оплате</span>
+            <strong id="paymentTotal">0 лей</strong>
+        </div>
+
+        <div class="payment-row">
+            <span>Сдача</span>
+            <strong id="changeAmount">0 лей</strong>
+        </div>
+
+        <div class="payment-row">
+            <span>Статус</span>
+            <strong id="paymentStatus">Ожидание оплаты</strong>
+        </div>
+    </div>
+
+    <div class="receipt-footer">
+        <div class="total-row">
+            <span>Итого</span>
+            <strong id="totalPrice">0 лей</strong>
+        </div>
+
+        <div class="receipt-actions-grid">
+    <button class="history-open-btn" onclick="openHistoryModal()">История чеков</button>
+    <button class="close-btn" onclick="closeCurrentReceipt()">Закрыть чек</button>
+    <button class="danger-btn" onclick="clearReceipt()">Очистить чек</button>
+</div>
+    </div>
+
+    </div>
+</aside>
+        </section>
+    </main>
+
+<div id="modalOverlay" class="modal-overlay hidden">
+    <div class="modal-box glass">
+        <div class="modal-header">
+            <h3 id="modalTitle">Сообщение</h3>
+        </div>
+
+        <div class="modal-body">
+            <p id="modalMessage">Текст сообщения</p>
+        </div>
+
+        <div class="modal-actions" id="modalActions">
+            <button class="small-btn" id="modalCancelBtn">Отмена</button>
+            <button class="start-btn" id="modalOkBtn">ОК</button>
+        </div>
+    </div>
+</div>
+
+<div id="historyModalOverlay" class="modal-overlay hidden">
+    <div class="modal-box glass history-modal-box">
+        <div class="modal-header history-modal-header">
+            <h3>История чеков</h3>
+            <button class="small-btn" onclick="closeHistoryModal()">Закрыть</button>
+        </div>
+
+        <div id="historyModalList" class="history-list">
+            <p class="empty-text">История пока пустая</p>
+        </div>
+
+        <div class="modal-actions">
+            <button class="danger-btn" onclick="clearHistory()">Очистить историю</button>
+        </div>
+    </div>
+</div>
+
+    <script src="app.js"></script>
+</body>
+</html>
